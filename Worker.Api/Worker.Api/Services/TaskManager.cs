@@ -39,8 +39,8 @@ namespace Worker.Api.Services
                 _tasks[task.Id] = task;
             }
 
-            // Render on a thread pool thread, so the request returns at once.
-            _ = Task.Run(() => Run(task));
+            // Render on a dedicated thread, so the request returns at once.
+            _ = Task.Factory.StartNew(() => Run(task), TaskCreationOptions.LongRunning);
             return task;
         }
 
@@ -99,7 +99,7 @@ namespace Worker.Api.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Task {Id} failed", task.Id);
-                Finish(task, RenderTaskStatus.Failed, ex.Message);
+                Finish(task, RenderTaskStatus.Failed, (ex.InnerException ?? ex).Message);
             }
 
             _logger.LogInformation("Task {Id} finished: {Status}", task.Id, task.Status);

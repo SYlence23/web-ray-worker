@@ -6,7 +6,8 @@ namespace RayTracer
 {
     public static class Renderer
     {
-        
+        // Rendering uses its own low-priority threads instead of Parallel.For: Parallel.For runs on
+        // the thread pool, and a long render there leaves the web server no threads to answer requests.
         public static void Render(
             Scene scene,
             RenderSettings settings,
@@ -14,36 +15,76 @@ namespace RayTracer
             Action? onRowDone,
             CancellationToken cancellationToken)
         {
+            var camera = new Camera(scene.Camera, (float)settings.Width / settings.Height);
+            var nextRow = -1;
+            Exception? error = null;
+
+            void Work()
+            {
+                try
+                {
+                    int y;
+                    while ((y = Interlocked.Increment(ref nextRow)) < settings.Height)
+                    {
+                        if (cancellationToken.IsCancellationRequested || error is not null)
+                        {
+                            return;
+                        }
+
+                        RenderRow(y, scene.World, camera, settings, image);
+                        onRowDone?.Invoke();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Interlocked.CompareExchange(ref error, ex, null);
+                }
+            }
+
+            var threads = new Thread[Environment.ProcessorCount];
+            for (var i = 0; i < threads.Length; i++)
+            {
+                threads[i] = new Thread(Work) { IsBackground = true, Priority = ThreadPriority.BelowNormal };
+                threads[i].Start();
+            }
+
+            foreach (var thread in threads)
+            {
+                thread.Join();
+            }
+
+            if (error is not null)
+            {
+                throw new InvalidOperationException("Rendering failed.", error);
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+        }
+
+        private static void RenderRow(int y, IHittable world, Camera camera, RenderSettings settings, ImageBuffer image)
+        {
             var width = settings.Width;
             var height = settings.Height;
-            var camera = new Camera(scene.Camera, (float)width / height);
             var scale = 1f / settings.SamplesPerPixel;
+            var rng = new Random(HashCode.Combine(settings.Seed, y));
 
-            var options = new ParallelOptions { CancellationToken = cancellationToken };
-            Parallel.For(0, height, options, y =>
+            for (var x = 0; x < width; x++)
             {
-                var rng = new Random(HashCode.Combine(settings.Seed, y));
-
-                for (var x = 0; x < width; x++)
+                var color = Vector3.Zero;
+                for (var s = 0; s < settings.SamplesPerPixel; s++)
                 {
-                    var color = Vector3.Zero;
-                    for (var s = 0; s < settings.SamplesPerPixel; s++)
-                    {
-                        var u = (x + rng.NextSingle()) / (width - 1);
-                        var v = (height - 1 - y + rng.NextSingle()) / (height - 1);
-                        color += RayColor(camera.GetRay(u, v, rng), scene.World, settings.MaxDepth, rng);
-                    }
-
-                    image.SetPixel(
-                        x,
-                        y,
-                        ToByte(MathF.Sqrt(color.X * scale)),
-                        ToByte(MathF.Sqrt(color.Y * scale)),
-                        ToByte(MathF.Sqrt(color.Z * scale)));
+                    var u = (x + rng.NextSingle()) / (width - 1);
+                    var v = (height - 1 - y + rng.NextSingle()) / (height - 1);
+                    color += RayColor(camera.GetRay(u, v, rng), world, settings.MaxDepth, rng);
                 }
 
-                onRowDone?.Invoke();
-            });
+                image.SetPixel(
+                    x,
+                    y,
+                    ToByte(MathF.Sqrt(color.X * scale)),
+                    ToByte(MathF.Sqrt(color.Y * scale)),
+                    ToByte(MathF.Sqrt(color.Z * scale)));
+            }
         }
 
         private static Vector3 RayColor(Ray ray, IHittable world, int maxDepth, Random rng)
