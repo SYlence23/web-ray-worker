@@ -17,6 +17,7 @@ namespace Worker.Api
 
             builder.Services.Configure<WorkerOptions>(builder.Configuration.GetSection(WorkerOptions.SectionName));
             builder.Services.AddSingleton<TaskManager>();
+            builder.Services.AddHostedService<TaskCleanupService>();
 
             builder.Services.AddControllers()
                 .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(

@@ -58,6 +58,23 @@ namespace Worker.Api.Services
             return true;
         }
 
+        public int RemoveExpired()
+        {
+            var cutoff = DateTime.UtcNow.AddMinutes(-_options.TaskTtlMinutes);
+            var removed = 0;
+
+            foreach (var task in _tasks.Values)
+            {
+                if (task.FinishedAt < cutoff && _tasks.TryRemove(task.Id, out _))
+                {
+                    task.Cancellation.Dispose();
+                    removed++;
+                }
+            }
+
+            return removed;
+        }
+
         private void Run(RenderTask task)
         {
             var request = task.Request;
