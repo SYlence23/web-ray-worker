@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="RayTracer/RayTracer.csproj" Id="153645bf-1489-4758-9861-d40cd330c7dc" />
   <Project Path="Worker.Api/Worker.Api.csproj" />
 </Solution>
