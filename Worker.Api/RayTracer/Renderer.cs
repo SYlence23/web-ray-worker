@@ -16,6 +16,7 @@ namespace RayTracer
             CancellationToken cancellationToken)
         {
             var camera = new Camera(scene.Camera, (float)settings.Width / settings.Height);
+            var world = new BvhNode(scene.World.Objects);
             var nextRow = -1;
             Exception? error = null;
 
@@ -31,7 +32,7 @@ namespace RayTracer
                             return;
                         }
 
-                        RenderRow(y, scene.World, camera, settings, image);
+                        RenderRow(y, world, camera, settings, image);
                         onRowDone?.Invoke();
                     }
                 }

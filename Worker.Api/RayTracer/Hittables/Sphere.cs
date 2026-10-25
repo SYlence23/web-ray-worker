@@ -18,6 +18,11 @@ namespace RayTracer.Hittables
 
         public IMaterial Material { get; }
 
+        // Abs because a negative radius is used for hollow glass.
+        public Aabb BoundingBox => new(
+            Center - new Vector3(MathF.Abs(Radius)),
+            Center + new Vector3(MathF.Abs(Radius)));
+
         public bool Hit(in Ray ray, float tMin, float tMax, out HitRecord record)
         {
             record = default;

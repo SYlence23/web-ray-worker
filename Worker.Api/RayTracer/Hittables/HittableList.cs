@@ -1,10 +1,18 @@
-﻿namespace RayTracer.Hittables
+namespace RayTracer.Hittables
 {
     public class HittableList : IHittable
     {
         private readonly List<IHittable> _objects = new();
 
-        public void Add(IHittable obj) => _objects.Add(obj);
+        public IReadOnlyList<IHittable> Objects => _objects;
+
+        public Aabb BoundingBox { get; private set; }
+
+        public void Add(IHittable obj)
+        {
+            BoundingBox = _objects.Count == 0 ? obj.BoundingBox : Aabb.Union(BoundingBox, obj.BoundingBox);
+            _objects.Add(obj);
+        }
 
         public bool Hit(in Ray ray, float tMin, float tMax, out HitRecord record)
         {
