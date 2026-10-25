@@ -60,7 +60,6 @@ namespace Worker.Api.Controllers
             return new TaskStatusResponse(task.Status, task.Progress, task.Error);
         }
 
-        // Partial while the task is running, final once it is done.
         [HttpGet("{id:guid}/image")]
         [ProducesResponseType<FileContentResult>(StatusCodes.Status200OK, "image/png")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

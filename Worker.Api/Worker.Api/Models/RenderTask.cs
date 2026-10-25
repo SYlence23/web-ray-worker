@@ -33,7 +33,6 @@ namespace Worker.Api.Models
 
         public DateTime? FinishedAt { get; set; }
 
-        // Called from the render threads after each finished row.
         public void RowDone() => Interlocked.Increment(ref _rowsDone);
     }
 }

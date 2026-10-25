@@ -1,7 +1,5 @@
 namespace RayTracer.Hittables
 {
-    // Bounding volume hierarchy: a binary tree of boxes, so a ray only tests the objects
-    // whose boxes it passes through instead of every object in the scene.
     public class BvhNode : IHittable
     {
         private readonly IHittable _left;
@@ -31,7 +29,6 @@ namespace RayTracer.Hittables
             }
             else
             {
-                // Split along the longest axis of the box around the object centers.
                 var bounds = objects[start].BoundingBox;
                 for (var i = start + 1; i < end; i++)
                 {

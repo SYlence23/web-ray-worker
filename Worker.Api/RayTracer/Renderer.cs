@@ -6,8 +6,6 @@ namespace RayTracer
 {
     public static class Renderer
     {
-        // Rendering uses its own low-priority threads instead of Parallel.For: Parallel.For runs on
-        // the thread pool, and a long render there leaves the web server no threads to answer requests.
         public static void Render(
             Scene scene,
             RenderSettings settings,

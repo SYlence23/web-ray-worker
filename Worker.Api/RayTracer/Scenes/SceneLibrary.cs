@@ -46,7 +46,6 @@ namespace RayTracer.Scenes
             return new Scene(world, new CameraSettings(new Vector3(-2, 1.2f, 1), new Vector3(0, 0, -1), 35, 0.05f));
         }
 
-        // The cover of "Ray Tracing in One Weekend": hundreds of small random spheres.
         private static Scene Random(int seed)
         {
             var rng = new Random(seed);

@@ -24,7 +24,6 @@ namespace Worker.Api.Services
 
         public int Capacity => _options.Capacity;
 
-        // Returns null when the worker is full.
         public RenderTask? TryStart(RenderRequest request)
         {
             RenderTask task;
@@ -39,7 +38,6 @@ namespace Worker.Api.Services
                 _tasks[task.Id] = task;
             }
 
-            // Render on a dedicated thread, so the request returns at once.
             _ = Task.Factory.StartNew(() => Run(task), TaskCreationOptions.LongRunning);
             return task;
         }
@@ -93,7 +91,6 @@ namespace Worker.Api.Services
             }
             catch (OperationCanceledException)
             {
-                // If the user cancelled, the status is already Cancelled and this does nothing.
                 Finish(task, RenderTaskStatus.Failed, $"Render took longer than {_options.MaxRenderSeconds} s.");
             }
             catch (Exception ex)
@@ -105,7 +102,6 @@ namespace Worker.Api.Services
             _logger.LogInformation("Task {Id} finished: {Status}", task.Id, task.Status);
         }
 
-        // Only a running task can change its status, so the first outcome wins.
         private void Finish(RenderTask task, RenderTaskStatus status, string? error)
         {
             lock (_lock)

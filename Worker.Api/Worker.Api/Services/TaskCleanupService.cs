@@ -1,6 +1,5 @@
 namespace Worker.Api.Services
 {
-    // Removes finished tasks from memory once they are older than TaskTtlMinutes.
     public class TaskCleanupService : BackgroundService
     {
         private readonly TaskManager _taskManager;

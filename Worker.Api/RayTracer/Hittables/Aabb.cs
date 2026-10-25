@@ -2,7 +2,6 @@ using System.Numerics;
 
 namespace RayTracer.Hittables
 {
-    // Axis-aligned bounding box.
     public readonly struct Aabb
     {
         public Aabb(Vector3 min, Vector3 max)
@@ -19,7 +18,6 @@ namespace RayTracer.Hittables
 
         public static Aabb Union(Aabb a, Aabb b) => new(Vector3.Min(a.Min, b.Min), Vector3.Max(a.Max, b.Max));
 
-        // Slab test: the ray hits the box if its entry and exit ranges on all three axes overlap.
         public bool Hit(in Ray ray, float tMin, float tMax)
         {
             var invDirection = Vector3.One / ray.Direction;
