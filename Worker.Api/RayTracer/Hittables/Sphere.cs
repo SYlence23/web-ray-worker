@@ -1,18 +1,22 @@
 ﻿using System.Numerics;
+using RayTracer.Materials;
 
 namespace RayTracer.Hittables
 {
     public class Sphere : IHittable
     {
-        public Sphere(Vector3 center, float radius)
+        public Sphere(Vector3 center, float radius, IMaterial material)
         {
             Center = center;
             Radius = radius;
+            Material = material;
         }
 
         public Vector3 Center { get; }
 
         public float Radius { get; }
+
+        public IMaterial Material { get; }
 
         public bool Hit(in Ray ray, float tMin, float tMax, out HitRecord record)
         {
@@ -43,6 +47,7 @@ namespace RayTracer.Hittables
             record.T = root;
             record.Point = ray.At(root);
             record.SetFaceNormal(ray, (record.Point - Center) / Radius);
+            record.Material = Material;
             return true;
         }
     }

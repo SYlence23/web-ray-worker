@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using RayTracer.Materials;
 
 namespace RayTracer.Hittables
 {
@@ -7,7 +8,8 @@ namespace RayTracer.Hittables
         public Vector3 Point;   
         public Vector3 Normal;  
         public float T;        
-        public bool FrontFace;  
+        public bool FrontFace;
+        public IMaterial Material;
         public void SetFaceNormal(in Ray ray, Vector3 outwardNormal)
         {
             FrontFace = Vector3.Dot(ray.Direction, outwardNormal) < 0;
