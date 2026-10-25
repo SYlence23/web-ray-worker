@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using RayTracer.Scenes;
 using Worker.Api.Models;
 using Worker.Api.Options;
 using Worker.Api.Services;
@@ -10,9 +11,6 @@ namespace Worker.Api.Controllers
     [Route("tasks")]
     public class TasksController : ControllerBase
     {
-        // TODO: take this list from the RayTracer scenes once they exist.
-        private static readonly string[] KnownScenes = ["spheres", "glass", "random"];
-
         private readonly TaskManager _taskManager;
         private readonly WorkerOptions _options;
 
@@ -29,7 +27,7 @@ namespace Worker.Api.Controllers
         [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
         public IActionResult Create(RenderRequest request)
         {
-            if (!KnownScenes.Contains(request.Scene))
+            if (!SceneLibrary.Exists(request.Scene))
             {
                 return Problem($"Unknown scene '{request.Scene}'.", statusCode: StatusCodes.Status400BadRequest);
             }
@@ -60,6 +58,21 @@ namespace Worker.Api.Controllers
             }
 
             return new TaskStatusResponse(task.Status, task.Progress, task.Error);
+        }
+
+        // Partial while the task is running, final once it is done.
+        [HttpGet("{id:guid}/image")]
+        [ProducesResponseType<FileContentResult>(StatusCodes.Status200OK, "image/png")]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public IActionResult GetImage(Guid id)
+        {
+            var task = _taskManager.Get(id);
+            if (task is null)
+            {
+                return NotFound();
+            }
+
+            return File(task.Image.EncodePng(), "image/png");
         }
 
         [HttpDelete("{id:guid}")]
