@@ -2,6 +2,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Scalar.AspNetCore;
+using Worker.Api.Middleware;
 using Worker.Api.Options;
 using Worker.Api.Services;
 
@@ -30,6 +31,7 @@ namespace Worker.Api
                 app.MapScalarApiReference();
             }
 
+            app.UseMiddleware<WorkerTokenMiddleware>();
             app.UseAuthorization();
 
             app.MapControllers();

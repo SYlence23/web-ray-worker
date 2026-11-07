@@ -13,5 +13,7 @@ namespace Worker.Api.Options
         public int MaxRenderSeconds { get; set; } = 300;
 
         public int TaskTtlMinutes { get; set; } = 10;
+
+        public string Token { get; set; } = string.Empty;
     }
 }

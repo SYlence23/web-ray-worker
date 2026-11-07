@@ -10,3 +10,4 @@ services:
     environment:
       Worker__Name: ${WORKER_NAME:-remote-worker}
       Worker__Capacity: ${WORKER_CAPACITY:-2}
+      Worker__Token: ${WORKER_TOKEN:-}

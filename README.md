@@ -124,6 +124,7 @@ Settings come from `appsettings.json` or environment variables:
 | Max complexity | `Worker__MaxComplexity` | `150000000` | Max width × height × samples |
 | Max render time | `Worker__MaxRenderSeconds` | `120` | Task is cancelled after this |
 | Task TTL | `Worker__TaskTtlMinutes` | `10` | How long finished tasks stay in memory |
+| Worker token | `Worker__Token` | empty | Shared secret. When set, every request must send it in the `X-Worker-Token` header, otherwise `401` |
 | Port | `ASPNETCORE_URLS` | `http://+:8080` | Listen address |
 
 ## Tech stack
@@ -192,9 +193,10 @@ Optional settings go in a `.env` file next to `docker-compose.yml`:
 WORKER_NAME=worker-pc2
 WORKER_PORT=8080
 WORKER_CAPACITY=2
+WORKER_TOKEN=the-same-secret-as-the-load-balancer
 ```
 
-Check it from the load balancer's machine with `curl http://<worker-ip>:8080/health`, then add `http://<worker-ip>:8080` to `RENDERERS` in the main repo's `.env`. On Windows, allow inbound TCP 8080 in the firewall if the request times out.
+Always set `WORKER_TOKEN` when the worker is reachable from outside (another network, ngrok): without it anyone who knows the address can send it renders. Check it from the load balancer's machine with `curl -H "X-Worker-Token: <token>" http://<worker-ip>:8080/health`, then add `http://<worker-ip>:8080` to `RENDERERS` in the main repo's `.env`. On Windows, allow inbound TCP 8080 in the firewall if the request times out.
 
 **Whole system:** run `docker compose up --build` from the main `raytracer` repo.
 
