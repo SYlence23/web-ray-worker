@@ -178,6 +178,24 @@ docker run -d -p 5001:8080 -e Worker__Name=worker-1 web-ray-worker
 docker run -d -p 5002:8080 -e Worker__Name=worker-2 web-ray-worker
 ```
 
+**On another machine:** this repo has its own `docker-compose.yml` that starts one worker and publishes its port, so a second PC only needs this repo and Docker:
+
+```bash
+git clone https://github.com/<you>/web-ray-worker
+cd web-ray-worker
+docker compose up --build -d
+```
+
+Optional settings go in a `.env` file next to `docker-compose.yml`:
+
+```
+WORKER_NAME=worker-pc2
+WORKER_PORT=8080
+WORKER_CAPACITY=2
+```
+
+Check it from the load balancer's machine with `curl http://<worker-ip>:8080/health`, then add `http://<worker-ip>:8080` to `RENDERERS` in the main repo's `.env`. On Windows, allow inbound TCP 8080 in the firewall if the request times out.
+
 **Whole system:** run `docker compose up --build` from the main `raytracer` repo.
 
 ## Roadmap
